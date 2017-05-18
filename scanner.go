@@ -205,10 +205,10 @@ func stateBeginValue(s *scanner, c byte) int {
 		return scanSkipSpace
 	}
 	switch c {
-	case '{':
+	case '(':
 		s.step = stateBeginStringOrEmpty
 		s.pushParseState(parseObjectKey)
-		return scanBeginObject
+		return scanObjectKey
 	case '[':
 		s.step = stateBeginValueOrEmpty
 		s.pushParseState(parseArrayValue)
@@ -244,7 +244,7 @@ func stateBeginStringOrEmpty(s *scanner, c byte) int {
 	if c <= ' ' && isSpace(c) {
 		return scanSkipSpace
 	}
-	if c == '}' {
+	if c == ')' {
 		n := len(s.parseState)
 		s.parseState[n-1] = parseObjectValue
 		return stateEndValue(s, c)
@@ -257,7 +257,7 @@ func stateBeginString(s *scanner, c byte) int {
 	if c <= ' ' && isSpace(c) {
 		return scanSkipSpace
 	}
-	if c == '"' {
+	if c == '(' {
 		s.step = stateInString
 		return scanBeginLiteral
 	}
@@ -280,20 +280,13 @@ func stateEndValue(s *scanner, c byte) int {
 	}
 	ps := s.parseState[n-1]
 	switch ps {
-	case parseObjectKey:
-		if c == ':' {
-			s.parseState[n-1] = parseObjectValue
-			s.step = stateBeginValue
-			return scanObjectKey
-		}
-		return s.error(c, "after object key")
 	case parseObjectValue:
 		if c == ',' {
 			s.parseState[n-1] = parseObjectKey
 			s.step = stateBeginString
 			return scanObjectValue
 		}
-		if c == '}' {
+		if c == ')' {
 			s.popParseState()
 			return scanEndObject
 		}
@@ -546,7 +539,7 @@ func stateFals(s *scanner, c byte) int {
 
 // stateN is the state after reading `n`.
 func stateN(s *scanner, c byte) int {
-	if c == 'u' {
+	if c == 'i' {
 		s.step = stateNu
 		return scanContinue
 	}
@@ -555,15 +548,6 @@ func stateN(s *scanner, c byte) int {
 
 // stateNu is the state after reading `nu`.
 func stateNu(s *scanner, c byte) int {
-	if c == 'l' {
-		s.step = stateNul
-		return scanContinue
-	}
-	return s.error(c, "in literal null (expecting 'l')")
-}
-
-// stateNul is the state after reading `nul`.
-func stateNul(s *scanner, c byte) int {
 	if c == 'l' {
 		s.step = stateEndValue
 		return scanContinue

@@ -324,8 +324,8 @@ func (d *decodeState) next() []byte {
 	// Our scanner has seen the opening brace/bracket
 	// and thinks we're still in the middle of the object.
 	// invent a closing brace/bracket to get it out.
-	if c == '{' {
-		d.scan.step(&d.scan, '}')
+	if c == '(' {
+		d.scan.step(&d.scan, ')')
 	} else {
 		d.scan.step(&d.scan, ']')
 	}
@@ -378,7 +378,7 @@ func (d *decodeState) value(v reflect.Value) {
 		n := len(d.scan.parseState)
 		if n > 0 && d.scan.parseState[n-1] == parseObjectKey {
 			// d.scan thinks we just read an object key; finish the object
-			d.scan.step(&d.scan, ':')
+			d.scan.step(&d.scan, 'i')
 			d.scan.step(&d.scan, '"')
 			d.scan.step(&d.scan, '"')
 			d.scan.step(&d.scan, '}')
@@ -581,7 +581,7 @@ func (d *decodeState) array(v reflect.Value) {
 	}
 }
 
-var nullLiteral = []byte("null")
+var nullLiteral = []byte("nil")
 var textUnmarshalerType = reflect.TypeOf(new(encoding.TextUnmarshaler)).Elem()
 
 // object consumes an object from d.data[d.off-1:], decoding into the value v.
@@ -839,7 +839,7 @@ func (d *decodeState) literalStore(item []byte, v reflect.Value, fromQuoted bool
 				var val string
 				switch item[0] {
 				case 'n':
-					val = "null"
+					val = "nil"
 				case 't', 'f':
 					val = "bool"
 				default:
@@ -870,7 +870,7 @@ func (d *decodeState) literalStore(item []byte, v reflect.Value, fromQuoted bool
 	case 'n': // null
 		// The main parser checks that only true and false can reach here,
 		// but if this was a quoted string input, it could be anything.
-		if fromQuoted && string(item) != "null" {
+		if fromQuoted && string(item) != "nil" {
 			d.saveError(fmt.Errorf("json: invalid use of ,string struct tag, trying to unmarshal %q into %v", item, v.Type()))
 			break
 		}

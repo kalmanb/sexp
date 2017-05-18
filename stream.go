@@ -245,7 +245,7 @@ type RawMessage []byte
 // MarshalJSON returns m as the JSON encoding of m.
 func (m RawMessage) MarshalJSON() ([]byte, error) {
 	if m == nil {
-		return []byte("null"), nil
+		return []byte("nil"), nil
 	}
 	return m, nil
 }
