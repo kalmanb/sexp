@@ -280,6 +280,13 @@ func stateEndValue(s *scanner, c byte) int {
 	}
 	ps := s.parseState[n-1]
 	switch ps {
+	case parseObjectKey:
+		if c == '.' {
+			s.parseState[n-1] = parseObjectValue
+			s.step = stateBeginValue
+			return scanObjectKey
+		}
+		return s.error(c, "after object key")
 	case parseObjectValue:
 		if c == ',' {
 			s.parseState[n-1] = parseObjectKey
